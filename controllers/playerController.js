@@ -1,5 +1,5 @@
 const { Engine, Rule: RuleEngine } = require('json-rules-engine');
-// const staticRules = require('../rules/staticRules');
+const staticRules = require('../rules/staticRules');
 const Player = require('../models/Player');
 const Rule = require('../models/Rule');
 
@@ -19,10 +19,10 @@ const calculateTotalCompensation = (player, results) => {
   });
   
   return {
-    baseCompensation: player.baseCompensation || 10000,
+    baseCompensation: player.baseCompensation,
     bonusAmount,
     fineAmount,
-    totalCompensation: (player.baseCompensation || 10000) + bonusAmount - fineAmount
+    totalCompensation: player.baseCompensation + bonusAmount - fineAmount
   };
 };
 
@@ -35,9 +35,9 @@ exports.calculateCompensation = async (req, res) => {
     const engine = new Engine();
     
     // Add all static rules to the engine
-    // Object.values(staticRules).forEach(rule => {
-    //   engine.addRule(rule);
-    // });
+    Object.values(staticRules).forEach(rule => {
+      engine.addRule(rule);
+    });
     
     // Run the engine with player data
     const { events, results, failureResults } = await engine.run(playerData);

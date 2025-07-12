@@ -5,8 +5,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 // Import routes
-const playerRoutes = require('../routes/playerRoutes');
-const ruleRoutes = require('../routes/ruleRoutes');
+const playerRoutes = require('./routes/playerRoutes');
+const ruleRoutes = require('./routes/ruleRoutes');
 
 // Initialize express app
 const app = express();
