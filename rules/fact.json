@@ -1,0 +1,9 @@
+{
+  "basePrice": 10000,
+  "goals": 2,
+  "assists": 1,
+  "yellowCards": 1,
+  "redCards": 0,
+  "passingAccuracy": 85,
+  "tackles": 6
+}

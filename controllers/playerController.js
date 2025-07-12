@@ -1,0 +1,218 @@
+const { Engine, Rule: RuleEngine } = require('json-rules-engine');
+// const staticRules = require('../rules/staticRules');
+const Player = require('../models/Player');
+const Rule = require('../models/Rule');
+
+// Helper function to calculate total compensation
+const calculateTotalCompensation = (player, results) => {
+  let bonusAmount = 0;
+  let fineAmount = 0;
+  
+  // Sum up all bonuses from rule results
+  results.forEach(result => {
+    if (result.bonusAmount) {
+      bonusAmount += result.bonusAmount;
+    }
+    if (result.fineAmount) {
+      fineAmount += result.fineAmount;
+    }
+  });
+  
+  return {
+    baseCompensation: player.baseCompensation || 10000,
+    bonusAmount,
+    fineAmount,
+    totalCompensation: (player.baseCompensation || 10000) + bonusAmount - fineAmount
+  };
+};
+
+// Controller for calculating compensation using static rules
+exports.calculateCompensation = async (req, res) => {
+  try {
+    const playerData = req.body;
+    
+    // Create a new engine
+    const engine = new Engine();
+    
+    // Add all static rules to the engine
+    // Object.values(staticRules).forEach(rule => {
+    //   engine.addRule(rule);
+    // });
+    
+    // Run the engine with player data
+    const { events, results, failureResults } = await engine.run(playerData);
+    
+    // Calculate final compensation
+    const compensationDetails = calculateTotalCompensation(playerData, results);
+    
+    // Return the result
+    res.status(200).json({
+      ...playerData,
+      ...compensationDetails,
+      rules: {
+        appliedRules: events.map(event => event.type),
+        failedRules: failureResults.map(failure => failure.name)
+      }
+    });
+  } catch (error) {
+    console.error('Error calculating compensation:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Controller for calculating compensation using both static and dynamic rules
+exports.calculateDynamicCompensation = async (req, res) => {
+  try {
+    const playerData = req.body;
+    
+    console.log('Calculating dynamic compensation for player:', playerData);
+    // Create a new engine
+    const engine = new Engine();
+    
+    // Add all static rules to the engine
+    // Object.values(staticRules).forEach(rule => {
+    //   engine.addRule(rule);
+    // });
+    
+    // Fetch dynamic rules from database or memory
+    let dynamicRules = [];
+    
+    try {
+      if (global.isMongoConnected) {
+        // Get rules from MongoDB that match player position or are applicable to ALL positions
+        dynamicRules = await Rule.find({
+          isActive: true,
+          $or: [
+            { position: playerData.position },
+            { position: 'ALL' }
+          ]
+        });
+      } else {
+        // Get rules from in-memory storage
+        dynamicRules = (global.inMemoryRules || []).filter(rule => 
+          rule.isActive !== false && 
+          (rule.position === playerData.position || rule.position === 'ALL')
+        );
+      }
+      
+      console.log('dynamicRules:', dynamicRules);
+      // Add dynamic rules to the engine
+      dynamicRules.forEach(dbRule => {
+        // Find the stat name from the first condition (assumes one stat per rule)
+        let statName = null;
+        if (dbRule.conditions && dbRule.conditions.all && dbRule.conditions.all.length > 0) {
+          statName = dbRule.conditions.all[0].fact;
+        }
+        // Get bonusAmount or fineAmount from event.result
+        const bonusAmount = dbRule.event?.result?.bonusAmount;
+        const fineAmount = dbRule.event?.result?.fineAmount;
+        console.log('Bonus Amount:', bonusAmount, 'Fine Amount:', fineAmount);
+        const rule = new RuleEngine({
+          name: dbRule.name,
+          conditions: dbRule.conditions,
+          event: {
+            type: `dynamic-${dbRule._id}`,
+            params: {
+              message: dbRule.description || `Applied dynamic rule ${dbRule.name}`
+            }
+          },
+          priority: dbRule.priority,
+          onSuccess: async (event, almanac) => {
+
+            if (statName) {
+              const statValue = await almanac.factValue(statName);
+              let result = {};
+              if (bonusAmount !== undefined) {
+                result.bonusAmount = statValue * bonusAmount;
+              }
+              if (fineAmount !== undefined) {
+                result.fineAmount = statValue * fineAmount;
+              }
+              return result;
+            }
+            return dbRule.event.result || {};
+          }
+        });
+        engine.addRule(rule);
+      });
+    } catch (dbError) {
+      console.log('Warning: Could not load dynamic rules, using only static rules', dbError);
+    }
+    
+    // Run the engine with player data
+    const { events, results, failureResults } = await engine.run(playerData);
+    console.log('Events-----', events);
+    console.log('failureResults-----', failureResults);
+    console.log('results-----', results);
+
+    // Calculate final compensation
+    const compensationDetails = calculateTotalCompensation(playerData, results);
+    
+    // Return the result
+    res.status(200).json({
+      ...playerData,
+      ...compensationDetails,
+      rules: {
+        appliedRules: events.map(event => event.type),
+        failedRules: failureResults.map(failure => failure.name),
+        dynamicRulesCount: dynamicRules.length
+      }
+    });
+  } catch (error) {
+    console.error('Error calculating dynamic compensation:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Controller for getting all players (MongoDB)
+exports.getAllPlayers = async (req, res) => {
+  try {
+    if (global.isMongoConnected) {
+      const players = await Player.find();
+      res.status(200).json(players);
+    } else {
+      res.status(200).json([]);
+    }
+  } catch (error) {
+    console.error('Error getting players:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Controller for getting a player by ID (MongoDB)
+exports.getPlayerById = async (req, res) => {
+  try {
+    if (!global.isMongoConnected) {
+      return res.status(503).json({ 
+        message: 'MongoDB is not connected. This feature requires database connectivity.'
+      });
+    }
+    
+    const player = await Player.findById(req.params.id);
+    if (!player) {
+      return res.status(404).json({ message: 'Player not found' });
+    }
+    res.status(200).json(player);
+  } catch (error) {
+    console.error('Error getting player:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Controller for creating a new player (MongoDB)
+exports.createPlayer = async (req, res) => {
+  try {
+    if (!global.isMongoConnected) {
+      return res.status(503).json({ 
+        message: 'MongoDB is not connected. This feature requires database connectivity.'
+      });
+    }
+    
+    const player = new Player(req.body);
+    await player.save();
+    res.status(201).json(player);
+  } catch (error) {
+    console.error('Error creating player:', error);
+    res.status(500).json({ error: error.message });
+  }
+};

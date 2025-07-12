@@ -1,0 +1,230 @@
+{
+  "info": {
+    "name": "Football Player Compensation API",
+    "description": "Collection for testing player compensation and rule creation endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "Calculate Compensation",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Manuel Neuer\",\n  \"position\": \"GOALKEEPER\",\n  \"club\": \"Bayern Munich\",\n  \"baseCompensation\": 10000,\n  \"goalsScored\": 0,\n  \"assists\": 1,\n  \"cleanSheets\": 10,\n  \"saves\": 50,\n  \"tackles\": 0,\n  \"passingAccuracy\": 75,\n  \"minutesPlayed\": 1800,\n  \"yellowCards\": 1,\n  \"redCards\": 0,\n  \"matchesPlayed\": 20,\n  \"penaltiesSaved\": 2,\n  \"penaltiesScored\": 0\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/player/calculateCompensation",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "player", "calculateCompensation"]
+        }
+      }
+    },
+    {
+      "name": "Create Rule - Goal Bonus",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Goal Bonus\",\n  \"description\": \"Bonus for each goal scored\",\n  \"position\": \"ANY\",\n  \"conditions\": {\n    \"all\": [{ \"fact\": \"goalsScored\", \"operator\": \"greaterThan\", \"value\": 0 }]\n  },\n  \"event\": {\n    \"type\": \"goalBonus\",\n    \"result\": { \"bonusAmount\": 200 }\n  },\n  \"priority\": 1,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/rule",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "rule"]
+        }
+      }
+    },
+    {
+      "name": "Create Rule - Assist Bonus",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Assist Bonus\",\n  \"description\": \"Bonus for each assist\",\n  \"position\": \"ANY\",\n  \"conditions\": {\n    \"all\": [{ \"fact\": \"assists\", \"operator\": \"greaterThan\", \"value\": 0 }]\n  },\n  \"event\": {\n    \"type\": \"assistBonus\",\n    \"result\": { \"bonusAmount\": 100 }\n  },\n  \"priority\": 1,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/rule",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "rule"]
+        }
+      }
+    },
+    {
+      "name": "Create Rule - Save Bonus",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Save Bonus\",\n  \"description\": \"Bonus for each save\",\n  \"position\": \"GOALKEEPER\",\n  \"conditions\": {\n    \"all\": [{ \"fact\": \"saves\", \"operator\": \"greaterThan\", \"value\": 0 }]\n  },\n  \"event\": {\n    \"type\": \"saveBonus\",\n    \"result\": { \"bonusAmount\": 50 }\n  },\n  \"priority\": 1,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/rule",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "rule"]
+        }
+      }
+    },
+    {
+      "name": "Create Rule - Tackle Bonus",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Tackle Bonus\",\n  \"description\": \"Bonus for each tackle\",\n  \"position\": \"ANY\",\n  \"conditions\": {\n    \"all\": [{ \"fact\": \"tackles\", \"operator\": \"greaterThan\", \"value\": 0 }]\n  },\n  \"event\": {\n    \"type\": \"tackleBonus\",\n    \"result\": { \"bonusAmount\": 50 }\n  },\n  \"priority\": 1,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/rule",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "rule"]
+        }
+      }
+    },
+    {
+      "name": "Create Rule - Passing Accuracy Bonus",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Passing Accuracy Bonus\",\n  \"description\": \"Bonus for passing accuracy\",\n  \"position\": \"ANY\",\n  \"conditions\": {\n    \"all\": [{ \"fact\": \"passingAccuracy\", \"operator\": \"greaterThan\", \"value\": 0 }]\n  },\n  \"event\": {\n    \"type\": \"passingAccuracyBonus\",\n    \"result\": { \"bonusAmount\": 100 }\n  },\n  \"priority\": 1,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/rule",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "rule"]
+        }
+      }
+    },
+    {
+      "name": "Create Rule - Minutes Played Bonus",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Minutes Played Bonus\",\n  \"description\": \"Bonus for minutes played\",\n  \"position\": \"ANY\",\n  \"conditions\": {\n    \"all\": [{ \"fact\": \"minutesPlayed\", \"operator\": \"greaterThan\", \"value\": 0 }]\n  },\n  \"event\": {\n    \"type\": \"minutesPlayedBonus\",\n    \"result\": { \"bonusAmount\": 200 }\n  },\n  \"priority\": 1,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/rule",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "rule"]
+        }
+      }
+    },
+    {
+      "name": "Create Rule - Yellow Card Penalty",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Yellow Card Penalty\",\n  \"description\": \"Penalty for each yellow card\",\n  \"position\": \"ANY\",\n  \"conditions\": {\n    \"all\": [{ \"fact\": \"yellowCards\", \"operator\": \"greaterThan\", \"value\": 0 }]\n  },\n  \"event\": {\n    \"type\": \"yellowCardPenalty\",\n    \"result\": { \"bonusAmount\": -100 }\n  },\n  \"priority\": 1,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/rule",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "rule"]
+        }
+      }
+    },
+    {
+      "name": "Create Rule - Red Card Penalty",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Red Card Penalty\",\n  \"description\": \"Penalty for each red card\",\n  \"position\": \"ANY\",\n  \"conditions\": {\n    \"all\": [{ \"fact\": \"redCards\", \"operator\": \"greaterThan\", \"value\": 0 }]\n  },\n  \"event\": {\n    \"type\": \"redCardPenalty\",\n    \"result\": { \"bonusAmount\": -300 }\n  },\n  \"priority\": 1,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/rule",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "rule"]
+        }
+      }
+    },
+    {
+      "name": "Create Rule - Penalties Saved Bonus",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Penalties Saved Bonus\",\n  \"description\": \"Bonus for each penalty saved\",\n  \"position\": \"GOALKEEPER\",\n  \"conditions\": {\n    \"all\": [{ \"fact\": \"penaltiesSaved\", \"operator\": \"greaterThan\", \"value\": 0 }]\n  },\n  \"event\": {\n    \"type\": \"penaltiesSavedBonus\",\n    \"result\": { \"bonusAmount\": 100 }\n  },\n  \"priority\": 1,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/rule",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "rule"]
+        }
+      }
+    },
+    {
+      "name": "Create Rule - Penalties Scored Bonus",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Penalties Scored Bonus\",\n  \"description\": \"Bonus for each penalty scored\",\n  \"position\": \"ANY\",\n  \"conditions\": {\n    \"all\": [{ \"fact\": \"penaltiesScored\", \"operator\": \"greaterThan\", \"value\": 0 }]\n  },\n  \"event\": {\n    \"type\": \"penaltiesScoredBonus\",\n    \"result\": { \"bonusAmount\": 100 }\n  },\n  \"priority\": 1,\n  \"isActive\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/rule",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "rule"]
+        }
+      }
+    }
+  ]
+}
