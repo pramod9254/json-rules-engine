@@ -22,51 +22,7 @@ const playerSchema = new mongoose.Schema({
   goalsScored: {
     type: Number,
     default: 0
-  },
-  assists: {
-    type: Number,
-    default: 0
-  },
-  // cleanSheets: {
-  //   type: Number,
-  //   default: 0
-  // },
-  // saves: {
-  //   type: Number,
-  //   default: 0
-  // },
-  // tackles: {
-  //   type: Number,
-  //   default: 0
-  // },
-  // passingAccuracy: {
-  //   type: Number,
-  //   default: 0
-  // },
-  // minutesPlayed: {
-  //   type: Number,
-  //   default: 0
-  // },
-  // yellowCards: {
-  //   type: Number,
-  //   default: 0
-  // },
-  // redCards: {
-  //   type: Number,
-  //   default: 0
-  // },
-  // matchesPlayed: {
-  //   type: Number,
-  //   default: 0
-  // },
-  // penaltiesSaved: {
-  //   type: Number,
-  //   default: 0
-  // },
-  // penaltiesScored: {
-  //   type: Number,
-  //   default: 0
-  // }
+  }
 }, {
   timestamps: true
 });

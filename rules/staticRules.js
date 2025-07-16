@@ -388,5 +388,29 @@ module.exports = {
   
   // Disciplinary rules
   yellowCardRule,
-  redCardRule
+  redCardRule,
+  
+  // Static rules
+  goalBonus: {
+    name: 'Goal Bonus',
+    conditions: {
+      all: [
+        {
+          fact: 'goalsScored',
+          operator: 'greaterThan',
+          value: 0
+        }
+      ]
+    },
+    event: {
+      type: 'goalBonus',
+      params: {
+        message: 'Bonus for each goal scored'
+      },
+      result: {
+        bonusAmount: 200
+      }
+    },
+    priority: 1
+  }
 };

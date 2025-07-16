@@ -8,8 +8,11 @@ const calculateTotalCompensation = (player, results) => {
   let bonusAmount = 0;
   let fineAmount = 0;
   
+  console.log('Calculating total compensation for player:', player);
+  console.log('Results:', JSON.stringify(results, null, 2));
   // Sum up all bonuses from rule results
   results.forEach(result => {
+    console.log('Processing result:', JSON.stringify(result, null, 2));
     if (result.bonusAmount) {
       bonusAmount += result.bonusAmount;
     }
@@ -23,6 +26,18 @@ const calculateTotalCompensation = (player, results) => {
     bonusAmount,
     fineAmount,
     totalCompensation: player.baseCompensation + bonusAmount - fineAmount
+  };
+};
+
+// Helper function to calculate total compensation for goals only
+const calculateGoalsCompensation = (player) => {
+  const baseCompensation = player.baseCompensation || 10000;
+  const goalsScored = player.goalsScored || 0;
+  const bonusAmount = goalsScored * 200;
+  return {
+    baseCompensation,
+    bonusAmount,
+    totalCompensation: baseCompensation + bonusAmount
   };
 };
 
@@ -110,26 +125,32 @@ exports.calculateDynamicCompensation = async (req, res) => {
         const rule = new RuleEngine({
           name: dbRule.name,
           conditions: dbRule.conditions,
-          event: {
-            type: `dynamic-${dbRule._id}`,
-            params: {
-              message: dbRule.description || `Applied dynamic rule ${dbRule.name}`
-            }
-          },
+          event: dbRule.event,
+          // {
+          //   type: dbRule.event.type,
+            
+          //   // params: {
+          //   //   message: dbRule.description || `Applied dynamic rule ${dbRule.name}`
+          //   // }
+          // },
           priority: dbRule.priority,
           onSuccess: async (event, almanac) => {
+            console.log('Dynamic rule triggered:', event);
 
-            if (statName) {
-              const statValue = await almanac.factValue(statName);
-              let result = {};
-              if (bonusAmount !== undefined) {
-                result.bonusAmount = statValue * bonusAmount;
-              }
-              if (fineAmount !== undefined) {
-                result.fineAmount = statValue * fineAmount;
-              }
-              return result;
-            }
+            // if (statName) {
+            //   const statValue = await almanac.factValue(statName);
+            //   let params = {};
+            //   if (bonusAmount !== undefined) {
+            //     params.bonusAmount = statValue * bonusAmount;
+            //     console.log('Calculated bonusAmount:', params.bonusAmount);
+            //   }
+            //   if (fineAmount !== undefined) {
+            //     params.fineAmount = statValue * fineAmount;
+            //     console.log('Calculated fineAmount:', params.fineAmount);
+            //   }
+            //   return { params }; // This will be merged into the event.params
+            // }
+            console.log('No statName found, returning default event result:', dbRule.event.result);
             return dbRule.event.result || {};
           }
         });
@@ -143,7 +164,7 @@ exports.calculateDynamicCompensation = async (req, res) => {
     const { events, results, failureResults } = await engine.run(playerData);
     console.log('Events-----', events);
     console.log('failureResults-----', failureResults);
-    console.log('results-----', results);
+    console.log('results-----', JSON.stringify(results, null, 2));
 
     // Calculate final compensation
     const compensationDetails = calculateTotalCompensation(playerData, results);
@@ -160,6 +181,21 @@ exports.calculateDynamicCompensation = async (req, res) => {
     });
   } catch (error) {
     console.error('Error calculating dynamic compensation:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Controller for calculating compensation using only goals
+exports.calculateGoalsCompensation = async (req, res) => {
+  try {
+    const playerData = req.body;
+    const compensationDetails = calculateGoalsCompensation(playerData);
+    res.status(200).json({
+      ...playerData,
+      ...compensationDetails
+    });
+  } catch (error) {
+    console.error('Error calculating goals compensation:', error);
     res.status(500).json({ error: error.message });
   }
 };
