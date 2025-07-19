@@ -13,11 +13,11 @@ const calculateTotalCompensation = (player, results) => {
   // Sum up all bonuses from rule results
   results.forEach(result => {
     console.log('Processing result:', JSON.stringify(result, null, 2));
-    if (result.bonusAmount) {
-      bonusAmount += result.bonusAmount;
+    if (result.event?.params?.bonusAmount) {
+      bonusAmount += result.event.params.bonusAmount;
     }
-    if (result.fineAmount) {
-      fineAmount += result.fineAmount;
+    if (result.event?.params?.fineAmount) {
+      fineAmount += result.event.params.fineAmount;
     }
   });
   
