@@ -126,32 +126,22 @@ exports.calculateDynamicCompensation = async (req, res) => {
           name: dbRule.name,
           conditions: dbRule.conditions,
           event: dbRule.event,
-          // {
-          //   type: dbRule.event.type,
-            
-          //   // params: {
-          //   //   message: dbRule.description || `Applied dynamic rule ${dbRule.name}`
-          //   // }
-          // },
+          
           priority: dbRule.priority,
           onSuccess: async (event, almanac) => {
             console.log('Dynamic rule triggered:', event);
-
-            // if (statName) {
-            //   const statValue = await almanac.factValue(statName);
-            //   let params = {};
-            //   if (bonusAmount !== undefined) {
-            //     params.bonusAmount = statValue * bonusAmount;
-            //     console.log('Calculated bonusAmount:', params.bonusAmount);
-            //   }
-            //   if (fineAmount !== undefined) {
-            //     params.fineAmount = statValue * fineAmount;
-            //     console.log('Calculated fineAmount:', params.fineAmount);
-            //   }
-            //   return { params }; // This will be merged into the event.params
-            // }
-            console.log('No statName found, returning default event result:', dbRule.event.result);
-            return dbRule.event.result || {};
+            if (statName) {
+              const statValue = await almanac.factValue(statName);
+              event.params = {};
+              if (bonusAmount !== undefined) {
+                event.params.bonusAmount = statValue * bonusAmount;
+              }
+              if (fineAmount !== undefined) {
+                event.params.fineAmount = statValue * fineAmount;
+              }
+              return event;
+            }
+            return event;
           }
         });
         engine.addRule(rule);
